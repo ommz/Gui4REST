@@ -1,5 +1,5 @@
 # Gui4REST
-A no-bloat GUI client for REST APIs
+A no-bloat native GUI client for REST APIs
 
 Back to the basics of what's essential in a REST API client:
 - Light and light on its feet (~12 MB)
