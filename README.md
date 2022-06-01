@@ -9,9 +9,15 @@ Back to the basics of what's essential in a REST API client:
 - Compiles to a single statically-linked executable: zero external dependencies
 - Zero embedded phone-home elements
 
+
 ## Screenshots
-screenshot-dark-theme.png
-screenshot-light-theme.png
+
+| Dark Theme  | Light Theme |
+| ------------- | ------------- |
+| ![Dark Theme](screenshot-dark-theme.png)  | ![Light Theme](screenshot-light-theme.png)  |
+
+![Dark Theme](screenshot-dark-theme.png)
+
 
 ## TODO
 - Burst Mode
