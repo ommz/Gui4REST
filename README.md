@@ -10,3 +10,7 @@ Back to the basics of what's essential in a REST API client:
 - Zero embedded phone-home elements
 
 Screenshot
+
+TODO
+- Burst Mode
+- Saving & loading of previously run APIRequests
