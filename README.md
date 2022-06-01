@@ -14,3 +14,4 @@ Screenshot
 TODO
 - Burst Mode
 - Saving & loading of previously run APIRequests
+- Tests
