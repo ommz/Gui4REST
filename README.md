@@ -27,6 +27,7 @@ On Linux, if double-clicking does not fire it up, make it executable first by ru
 cd /path/to/Gui4REST
 chmod +x Gui4REST
 ```
+Supported architectures: amd64, arm, arm64, 386, riscv64
 
 
 ## TODO
