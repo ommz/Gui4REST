@@ -21,6 +21,7 @@ jobs:
     # Install all the dependencies
     - name: Install dependencies
       run: |
+        sudo apt install gcc libgl1-mesa-dev xorg-dev
         go version
         go get ./...
         go get fyne.io/fyne/v2
