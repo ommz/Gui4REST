@@ -21,7 +21,7 @@ Back to the basics of what's essential in a REST API client:
 
 
 ## Installing & Running
-Portable executable binaries for Windows andLinux are available in the releases page.
+Portable executable binaries for Windows and Linux are available in the releases page.
 MacOS & BSD builds are coming (one import proved quite a handful about native graphics drivers for the usual painless golang cross-compiles)
 
 You may choose to run Gui4REST directly by double-clicking on the downloaded file.
