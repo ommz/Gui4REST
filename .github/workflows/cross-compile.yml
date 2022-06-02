@@ -19,7 +19,7 @@ jobs:
         uses: thatisuday/go-cross-build@v1
         with:
             platforms: 'linux/amd64, darwin/amd64, windows/amd64'
-            package: 'demo'
-            name: 'program'
-            compress: 'true'
+            package: ''
+            name: 'Gui4REST'
+            compress: 'false'
             dest: 'dist'
