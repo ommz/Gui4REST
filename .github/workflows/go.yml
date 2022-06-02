@@ -22,13 +22,11 @@ jobs:
     - name: Install dependencies
       run: |
         go version
+        go get ./...
         go get fyne.io/fyne/v2
         go get fyne.io/fyne/v2/cmd/fyne_demo/
         go get fyne.io/fyne/v2/cmd/fyne
-        fyne install
+        
         
     - name: Build
       run: go build -v ./main.go
-
-    - name: Test
-      run: go test -v ./main.go
