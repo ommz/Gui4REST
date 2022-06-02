@@ -36,3 +36,8 @@ chmod +x Gui4REST
 - Burst Mode
 - Saving & loading of previously run APIRequests
 - Tests
+
+
+
+## PS
+I built Gui4REST in an afternoon. Refinements will come :-)
