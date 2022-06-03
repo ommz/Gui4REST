@@ -141,7 +141,7 @@ func populateVBox1() *fyne.Container {
 func populateVBox2() *fyne.Container {
 	responseProgressBar = *widget.NewProgressBarInfinite()
 
-	responsesLabel.Wrapping = fyne.TextWrapWord
+	responsesLabel.Wrapping = fyne.TextWrapWord // set word wrap to avoid out-stretching the width
 
 	vbox2 := container.NewVBox(
 		titleCanvasText(canvas.NewText("RESPONSES", nil)),
@@ -306,13 +306,12 @@ func createSettingsFile() []byte {
 }
 
 func saveAppSettings() {
-	// marshal appSettings struct to JSON
-	b, err := json.Marshal(appSettings)
+	b, err := json.Marshal(appSettings) // create the JSON to be written
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// write json to file. Existing content will be overwritten
+	// write the JSON to file. Existing content will be overwritten
 	if err2 := ioutil.WriteFile(settingsFileName, b, 0644); err2 != nil {
 		log.Fatal(err2)
 	}
@@ -411,11 +410,3 @@ func creditsLicenses(a fyne.App) {
 func saveAPIRequest() {
 	//TODO
 }
-
-/*
-main.go:23:6: exported type APIRequest should have comment or be unexported
-main.go:24:2: struct field HttpMethod should be HTTPMethod
-main.go:36:6: exported type AppSettings should have comment or be unexported
-main.go:52:2: exported const DefaultWindowSizeX should have comment (or a comment on this block) or be unexported
-main.go:93:6: exported type DD should have comment or be unexported
-*/
