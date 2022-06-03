@@ -21,7 +21,7 @@ import (
 )
 
 type APIRequest struct {
-	HttpMethod   string
+	HTTPMethod   string
 	Path         string
 	ParamsJSON   string
 	UserAgent    string
@@ -49,8 +49,8 @@ var responsesLabel = widget.NewLabel("")
 var responseProgressBar widget.ProgressBarInfinite
 
 const (
-	DefaultWindowSizeX = 1250
-	DefaultWindowSizeY = 750
+	defaultWindowSizeX = 1250
+	defaultWindowSizeY = 750
 )
 
 func main() {
@@ -66,7 +66,7 @@ func main() {
 
 	//settings HBox
 	darkModeCheck := widget.NewCheck("Dark Mode", func(value bool) {
-		if value == true {
+		if value {
 			a.Settings().SetTheme(theme.DarkTheme())
 			appSettings.SetDarkTheme = true
 			saveAppSettings()
@@ -76,7 +76,7 @@ func main() {
 			saveAppSettings()
 		}
 	})
-	if appSettings.SetDarkTheme == true {
+	if appSettings.SetDarkTheme {
 		darkModeCheck.SetChecked(true)
 	}
 
@@ -90,13 +90,9 @@ func main() {
 	w.ShowAndRun()
 }
 
-type DD struct {
-	canvas.Text
-}
-
 func populateVBox1() *fyne.Container {
 	httpMethodSelect := widget.NewSelect(httpMethods, func(value string) {
-		apiRequest.HttpMethod = value
+		apiRequest.HTTPMethod = value
 	})
 	httpMethodSelect.SetSelectedIndex(0)
 
@@ -244,7 +240,7 @@ func initAppSettings(a fyne.App, w fyne.Window) {
 	}
 
 	// apply theme
-	if appSettings.SetDarkTheme == true {
+	if appSettings.SetDarkTheme {
 		a.Settings().SetTheme(theme.DarkTheme())
 	} else {
 		a.Settings().SetTheme(theme.LightTheme())
@@ -256,8 +252,8 @@ func initAppSettings(a fyne.App, w fyne.Window) {
 
 func createSettingsFile() []byte {
 	// to avoid zero sized window, set default window size
-	appSettings.WindowSizeX = DefaultWindowSizeX
-	appSettings.WindowSizeY = DefaultWindowSizeY
+	appSettings.WindowSizeX = defaultWindowSizeX
+	appSettings.WindowSizeY = defaultWindowSizeY
 
 	// marshal struct to JSON
 	contentBytes, err := json.Marshal(appSettings)
@@ -293,7 +289,7 @@ func sendHTTPRequest() {
 	var responseToPrint string
 
 	timeStart := time.Now().UnixNano() // round-trip timer
-	req, err := http.NewRequest(apiRequest.HttpMethod, apiRequest.Path, bytes.NewBuffer([]byte(apiRequest.ParamsJSON)))
+	req, err := http.NewRequest(apiRequest.HTTPMethod, apiRequest.Path, bytes.NewBuffer([]byte(apiRequest.ParamsJSON)))
 	if err != nil {
 		responsesLabel.SetText("ERROR: \r\n" + err.Error())
 		responseProgressBar.Hide()
@@ -371,3 +367,11 @@ func creditsLicenses(a fyne.App) {
 func saveAPIRequest() {
 	//TODO
 }
+
+/*
+main.go:23:6: exported type APIRequest should have comment or be unexported
+main.go:24:2: struct field HttpMethod should be HTTPMethod
+main.go:36:6: exported type AppSettings should have comment or be unexported
+main.go:52:2: exported const DefaultWindowSizeX should have comment (or a comment on this block) or be unexported
+main.go:93:6: exported type DD should have comment or be unexported
+*/
