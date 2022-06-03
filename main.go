@@ -34,9 +34,11 @@ type APIRequest struct {
 var apiRequest = &APIRequest{}
 
 type AppSettings struct {
-	SetDarkTheme bool    `json:"dark_theme_set"`
-	WindowSizeX  float32 `json:"window_size_x"`
-	WindowSizeY  float32 `json:"window_size_Y"`
+	SetDarkTheme        bool    `json:"dark_theme_set"`
+	WindowSizeX         float32 `json:"window_size_x"`
+	WindowSizeY         float32 `json:"window_size_Y"`
+	HideRequestHeaders  bool    `json:"hide_request_headers"`
+	HideResponseHeaders bool    `json:"hide_response_headers"`
 }
 
 var appSettings = &AppSettings{}
@@ -48,9 +50,11 @@ var httpClient = &http.Client{}
 var responsesLabel = widget.NewLabel("")
 var responseProgressBar widget.ProgressBarInfinite
 
+var darkModeCheck, hideRequestHeadersCheck, hideResponseHeadersCheck *widget.Check
+
 const (
 	defaultWindowSizeX = 1250
-	defaultWindowSizeY = 750
+	defaultWindowSizeY = 600
 )
 
 func main() {
@@ -58,29 +62,12 @@ func main() {
 	w := a.NewWindow("Gui4REST")
 	w.CenterOnScreen()
 
-	//read settings from file to appSettingsStruct then apply settings
-	initAppSettings(a, w)
+	initAppSettings(a, w) //read settings from file to appSettingsStruct then apply settings
 
-	vscroll := container.NewVScroll(populateVBox2())
+	vscroll := container.NewVScroll(populateVBox2()) //wrap vbox in a vscroll first to make it scrollable
 	vscroll.Direction = container.ScrollVerticalOnly
 
-	//settings HBox
-	darkModeCheck := widget.NewCheck("Dark Mode", func(value bool) {
-		if value {
-			a.Settings().SetTheme(theme.DarkTheme())
-			appSettings.SetDarkTheme = true
-			saveAppSettings()
-		} else {
-			a.Settings().SetTheme(theme.LightTheme())
-			appSettings.SetDarkTheme = false
-			saveAppSettings()
-		}
-	})
-	if appSettings.SetDarkTheme {
-		darkModeCheck.SetChecked(true)
-	}
-
-	mainGridColumns := container.NewGridWithColumns(3, populateVBox1(), vscroll, populateVBox3(a, darkModeCheck))
+	mainGridColumns := container.NewGridWithColumns(3, populateVBox1(), vscroll, populateVBox3(a))
 	mainGridRow := container.NewGridWithRows(1, mainGridColumns) //only way to extend the VBox to the whole height is to use Grids
 
 	w.SetContent(container.NewVBox(
@@ -103,7 +90,7 @@ func populateVBox1() *fyne.Container {
 	}
 
 	paramsTextarea := widget.NewMultiLineEntry()
-	paramsTextarea.SetPlaceHolder(`{"key1":"value1"},{"key2":"value2"},{"key3":"value3"}`)
+	paramsTextarea.SetPlaceHolder(`{"key1":"value1","key2":"value2",...}`)
 	paramsTextarea.OnChanged = func(value string) {
 		apiRequest.ParamsJSON = value
 	}
@@ -115,14 +102,14 @@ func populateVBox1() *fyne.Container {
 			apiRequest.BurstModeRPS = converted
 		}
 	}
-	burstRPSEntry.Hide()
+	burstRPSEntry.Hide() //proper implementation in the pipeline. Patience :-)
 
 	burstModeCheck := widget.NewCheck("Burst Mode (test rate-limiting & loading)", func(isChecked bool) {
 		if isChecked {
 			burstRPSEntry.Show()
 		} else {
 			burstRPSEntry.Hide()
-			apiRequest.BurstModeRPS = 0 // reset in case it was set
+			apiRequest.BurstModeRPS = 0 // reset in case it was initially set
 		}
 	})
 
@@ -133,7 +120,7 @@ func populateVBox1() *fyne.Container {
 	saveButton := widget.NewButton("Save Request", func() {
 		saveAPIRequest()
 	})
-	saveButton.Disable()
+	saveButton.Disable() //proper implementation in the pipeline. Patience :-)
 
 	vbox1 := container.NewVBox(
 		titleCanvasText(canvas.NewText("REQUESTS", nil)),
@@ -166,16 +153,16 @@ func populateVBox2() *fyne.Container {
 	return vbox2
 }
 
-func populateVBox3(a fyne.App, darkModeCheck *widget.Check) *fyne.Container {
+func populateVBox3(a fyne.App) *fyne.Container {
 	usernameEntry := widget.NewEntry()
-	usernameEntry.SetPlaceHolder("username")
+	usernameEntry.SetPlaceHolder("Username")
 	usernameEntry.OnChanged = func(value string) {
 		apiRequest.AuthUsername = value
 		responsesLabel.SetText("Config changed. Re-send request")
 	}
 
 	passwordEntry := widget.NewPasswordEntry()
-	passwordEntry.SetPlaceHolder("password")
+	passwordEntry.SetPlaceHolder("Password")
 	passwordEntry.OnChanged = func(value string) {
 		apiRequest.AuthPassword = value
 		responsesLabel.SetText("Config changed. Resend request")
@@ -195,6 +182,43 @@ func populateVBox3(a fyne.App, darkModeCheck *widget.Check) *fyne.Container {
 		responsesLabel.SetText("Config changed. Resend request")
 	}
 
+	hideRequestHeadersCheck = widget.NewCheck("Hide Req Headers", func(checked bool) {
+		if checked {
+			appSettings.HideRequestHeaders = true
+			saveAppSettings()
+			responsesLabel.SetText("Resend request to effect change")
+		} else {
+			appSettings.HideRequestHeaders = false
+			saveAppSettings()
+			responsesLabel.SetText("Resend request to effect change")
+		}
+	})
+
+	hideResponseHeadersCheck = widget.NewCheck("Hide Resp Headers", func(checked bool) {
+		if checked {
+			appSettings.HideResponseHeaders = true
+			saveAppSettings()
+			responsesLabel.SetText("Resend request to effect change")
+		} else {
+			appSettings.HideResponseHeaders = false
+			saveAppSettings()
+			responsesLabel.SetText("Resend request to effect change")
+		}
+	})
+
+	darkModeCheck = widget.NewCheck("Dark Mode", func(checked bool) {
+		if checked {
+			a.Settings().SetTheme(theme.DarkTheme())
+			appSettings.SetDarkTheme = true
+			saveAppSettings()
+		} else {
+			a.Settings().SetTheme(theme.LightTheme())
+			appSettings.SetDarkTheme = false
+			saveAppSettings()
+		}
+	})
+	initialCheckUncheck(a) //check/uncheck on app startup. Doing it later results in segfaulting
+
 	creditsLicensesButton := widget.NewButton("Credits & Licenses", func() {
 		creditsLicenses(a)
 	})
@@ -207,11 +231,30 @@ func populateVBox3(a fyne.App, darkModeCheck *widget.Check) *fyne.Container {
 		uaTextarea,
 		widget.NewLabel("\r\nReferrer"),
 		referrerTextarea,
+		container.NewGridWithColumns(2, hideRequestHeadersCheck, hideResponseHeadersCheck),
 		darkModeCheck,
 		creditsLicensesButton,
 	)
 
 	return vbox3
+}
+
+func initialCheckUncheck(a fyne.App) {
+	//check them appropriately on app startup
+	if appSettings.HideRequestHeaders {
+		hideRequestHeadersCheck.SetChecked(true)
+	}
+	if appSettings.HideResponseHeaders {
+		hideResponseHeadersCheck.SetChecked(true)
+	}
+
+	// apply theme on app startup
+	if appSettings.SetDarkTheme {
+		a.Settings().SetTheme(theme.DarkTheme())
+		darkModeCheck.SetChecked(true)
+	} else {
+		a.Settings().SetTheme(theme.LightTheme())
+	}
 }
 
 func titleCanvasText(ct *canvas.Text) *canvas.Text {
@@ -237,13 +280,6 @@ func initAppSettings(a fyne.App, w fyne.Window) {
 	if err := json.Unmarshal(contentBytes, &appSettings); err != nil {
 		responsesLabel.SetText("ERROR: \r\n" + err.Error())
 		return
-	}
-
-	// apply theme
-	if appSettings.SetDarkTheme {
-		a.Settings().SetTheme(theme.DarkTheme())
-	} else {
-		a.Settings().SetTheme(theme.LightTheme())
 	}
 
 	// apply window size
@@ -335,10 +371,16 @@ func formatServerResponse(req *http.Request, resp *http.Response, bodyStr string
 	}
 
 	responseToPrint := "Round-trip ime: " + fmt.Sprintf("%v", roundtripMillis) + "ms \r\n" +
-		"HTTP status: " + resp.Status + "\r\n\r\n" +
-		"REQUEST HEADERS: \r\n" + requestHeadersStr + "\r\n" +
-		"RESPONSE HEADERS: \r\n" + responseHeadersStr + "\r\n" +
-		"RESPONSE BODY: \r\n" + bodyStr
+		"HTTP status: " + resp.Status + "\r\n\r\n"
+
+	if !appSettings.HideRequestHeaders {
+		responseToPrint += "REQUEST HEADERS: \r\n" + requestHeadersStr + "\r\n"
+	}
+	if !appSettings.HideResponseHeaders {
+		responseToPrint += "RESPONSE HEADERS: \r\n" + responseHeadersStr + "\r\n"
+	}
+
+	responseToPrint += "RESPONSE BODY: \r\n" + bodyStr
 
 	return responseToPrint
 }
@@ -346,9 +388,11 @@ func formatServerResponse(req *http.Request, resp *http.Response, bodyStr string
 func creditsLicenses(a fyne.App) {
 	creditsLabel := widget.NewLabel("CREDITS\r\n" +
 		"Created By Martin Ombiro on a fine Monday afternoon.\r\n" +
-		"Happy REST API grokking!")
+		"Happy REST API grokking!\r\n\r\n\r\n" +
+		"CONTACT\r\n" +
+		"martinno@tutanota.com")
 
-	licensesLabel := widget.NewLabel("\r\n\r\nLICENSES\r\n" +
+	licensesLabel := widget.NewLabel("\r\nLICENSES\r\n" +
 		"This application and its source code is governed by the\r\n" +
 		"GNU General Public License (GPL) 3.0 license")
 
@@ -359,7 +403,7 @@ func creditsLicenses(a fyne.App) {
 			licensesLabel,
 		),
 	)
-	w.Resize(fyne.NewSize(350, 300))
+	w.Resize(fyne.NewSize(350, 350))
 	w.CenterOnScreen()
 	w.Show()
 }
